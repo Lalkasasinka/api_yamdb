@@ -2,6 +2,10 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 
+class Commetn(models.Model):
+    ...
+
+
 class Category(models.Model):
     name = models.CharField('название', max_length=100)
     slug = models.SlugField('слаг жанра', unique=True,) 
