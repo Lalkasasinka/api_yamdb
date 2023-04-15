@@ -30,7 +30,7 @@ class Title(models.Model):
     name= models.CharField('название', max_length=100)
     year = models.IntegerField('год')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='title', verbose_name='категория', null=True, blank=True)
-    genre = models.ManyToManyField(Genre, related_name='title', verbose_name='жанр', null=True, blank=True)
+    genre = models.ManyToManyField(Genre, related_name='title', verbose_name='жанр')
 
     def __str__(self):
         return self.name
