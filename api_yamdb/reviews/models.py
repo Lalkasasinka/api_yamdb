@@ -89,21 +89,37 @@ class Title(models.Model):
         verbose_name_plural = 'Произведения'
 
 class Review(models.Model):
-    CHOICES = [
-        1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+    one = 1
+    two = 2
+    three = 3
+    four = 4
+    five = 5
+    six = 6
+    seven = 7
+    eight = 8
+    nine = 9 
+    ten = 10
+    CHOICES_SCORE = [
+        (one, "1"),
+        (two, "2"),
+        (three  , "3"),
+        (four, "4"),
+        (five, "5"),
+        (six, "6"),
+        (seven, "7"),
+        (eight, "8"),
+        (nine, "9"),
+        (ten, "10"),
     ]
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='reviews'
     )
-    title = models.OneToOneField(
-
-    )
+    title = models.OneToOneField(Title, on_delete=models.CASCADE, related_name='review', verbose_name='обзор')
     text = models.TextField()
-    score = models.CharField(choices=CHOICES)
+    score = models.CharField(choices=CHOICES_SCORE, max_length=2)
     created_time = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True
     )
-
 
 class Comment(models.Model):
     author = models.ForeignKey(
