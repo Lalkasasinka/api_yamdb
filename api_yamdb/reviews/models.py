@@ -1,9 +1,58 @@
-from django.contrib.auth import get_user_model
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
+
+
+EMAIL_LIMIT = 254
+NAME_LIMIT = 150
+ROLE_LIMIT = 50
+TITLE_LIMIT = 100
+
+
+class User(AbstractUser):
+    Admin = 'admin'
+    Moderator = 'moderator'
+    User = 'user'
+    Roles = [
+        (Admin, 'Administrator'),
+        (Moderator, 'Moderator'),
+        (User, 'User'),
+    ]
+
+    email = models.EmailField(
+        verbose_name='Электронная почта',
+        max_length=EMAIL_LIMIT,
+        unique=True,
+    )
+    username = models.CharField(
+        verbose_name='Имя пользователя',
+        max_length=NAME_LIMIT,
+        unique=True,
+        validators=[UnicodeUsernameValidator()],
+    )
+    role = models.CharField(
+        verbose_name='Роль',
+        max_length=ROLE_LIMIT,
+        choices=Roles,
+        default=User,
+    )
+
+    class Meta:
+        ordering = ['username']
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
+    @property
+    def is_admin(self):
+        return self.role == self.Admin
+
+    @property
+    def is_moderator(self):
+        return self.role == self.Moderator
 
 
 class Category(models.Model):
-    name = models.CharField('название', max_length=100)
+    name = models.CharField('название', max_length=TITLE_LIMIT)
     slug = models.SlugField('слаг жанра', unique=True,) 
 
     def __str__(self):
@@ -15,7 +64,7 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    name = models.CharField('название', max_length=100)
+    name = models.CharField('название', max_length=TITLE_LIMIT)
     slug = models.SlugField('слаг жанра', unique=True) 
 
     def __str__(self):
@@ -27,7 +76,7 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    name= models.CharField('название', max_length=100)
+    name= models.CharField('название', max_length=TITLE_LIMIT)
     year = models.IntegerField('год')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='title', verbose_name='категория', null=True, blank=True)
     genre = models.ManyToManyField(Genre, related_name='title', verbose_name='жанр')
