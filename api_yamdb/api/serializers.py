@@ -9,20 +9,17 @@ class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         validators=[validate_username,
                     UniqueValidator(queryset=User.objects.all())
-                    ],
-                    max_lenght=NAME_LIMIT
-    )
+                    ], max_length=NAME_LIMIT)
 
     class Meta:
         fields = ('username', 'email', 'first_name',
-                  'last_name', 'role')
+                  'last_name', 'bio', 'role')
         model = User
 
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(
-        max_lenght=NAME_LIMIT, validators=[validate_username],
-        )
+        max_length=NAME_LIMIT, validators=[validate_username],)
     confirmation_code = serializers.CharField()
 
 

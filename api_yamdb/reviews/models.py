@@ -36,6 +36,10 @@ class User(AbstractUser):
         choices=Roles,
         default=User,
     )
+    bio = models.TextField(
+        'Биография',
+        blank=True,
+    )
 
     class Meta:
         ordering = ['username']
