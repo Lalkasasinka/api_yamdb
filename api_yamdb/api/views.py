@@ -1,8 +1,14 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, filters, mixins, permissions, viewsets
+from rest_framework.response import Response
 
-from reviews.models import Category, Genre, Title, Review
-from .serializers import TitleSerializer, CategorySerializer, CommentSerializer, ReviewSerializer
+from reviews.models import Category, Genre, Title, Review, User
+from .serializers import (TitleSerializer, CategorySerializer,
+                          CommentSerializer, ReviewSerializer,
+                          UserSerializer, TokenSerializer,
+                          SignUpSerializer)
+from .permissions import (IsAdmin, IsAdminModeratorOwnerOrReadOnly,
+                          IsAdminOrReadOnly)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -42,3 +48,10 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
 
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (IsAdmin,)
+    filter_backends = (filters.SearchFilter)
+    search_fields = ('username',)
