@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueValidator, ValidationError
+import datetime
 from reviews.models import (Category, Comment, Genre, Review, Title,
                             User, NAME_LIMIT, EMAIL_LIMIT)
 from .validators import validate_username
@@ -83,7 +84,24 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(),
+        slug_field='slug'
+    )
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
+        slug_field='slug',
+        many=True
+    )
+
+    def validate_year(self, value):
+        now = datetime.datetime.now().year
+        if value > now:
+            raise ValidationError(
+                f'{value} не может быть больше {now}'
+            )
+        return value
 
     class Meta:
-        model = Title
         fields = '__all__'
+        model = Title
