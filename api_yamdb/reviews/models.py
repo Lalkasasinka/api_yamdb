@@ -103,8 +103,10 @@ class Review(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='reviews'
     )
-    title = models.OneToOneField(Title, on_delete=models.CASCADE,
-                                 related_name='reviews', verbose_name='обзор')
+    title = models.ForeignKey(
+        Title, on_delete=models.CASCADE,
+        related_name='reviews', verbose_name='обзор'
+    )
     text = models.TextField()
     score = models.IntegerField(
         validators=(
@@ -113,7 +115,7 @@ class Review(models.Model):
         ),
         error_messages={'validators': 'Оценка должна быть от 1 до 10'}
     )
-    created_time = models.DateTimeField(
+    pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True
     )
 
@@ -121,20 +123,23 @@ class Review(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=('title', 'author', ),
-                name='unique review'
+                name='unique_review'
             )
         ]
-        ordering = ('created_time',)
+        ordering = ('pub_date',)
 
 
 class Comment(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='comments'
     )
-    Reviews = models.ForeignKey(
+    review = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name='comments'
     )
     text = models.TextField()
-    created_time = models.DateTimeField(
+    pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True
     )
+
+    def __str__(self) -> str:
+        return self.text
