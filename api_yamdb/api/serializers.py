@@ -5,26 +5,6 @@ from reviews.models import (Category, Comment, Genre, Review, Title,
                             User, NAME_LIMIT, EMAIL_LIMIT)
 from .validators import validate_username
 
-class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        validators=[validate_username,
-                    UniqueValidator(queryset=User.objects.all())
-                    ],
-                    max_lenght=NAME_LIMIT
-    )
-
-    class Meta:
-        fields = ('username', 'email', 'first_name',
-                  'last_name', 'role')
-        model = User
-
-
-class TokenSerializer(serializers.Serializer):
-    username = serializers.CharField(
-        max_lenght=NAME_LIMIT, validators=[validate_username],
-        )
-    confirmation_code = serializers.CharField()
-
 
 class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=EMAIL_LIMIT,)
@@ -53,6 +33,15 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = '__all__'
+        lookup_field = 'slug'
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Genre
+        fields = '__all__'
+        lookup_field = 'slug'
 
 
 class TitleSerializer(serializers.ModelSerializer):
