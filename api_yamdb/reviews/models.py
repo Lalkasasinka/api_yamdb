@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 
@@ -36,6 +37,10 @@ class User(AbstractUser):
         choices=Roles,
         default=User,
     )
+    bio = models.TextField(
+        'Биография',
+        blank=True,
+    )
 
     class Meta:
         ordering = ['username']
@@ -53,73 +58,74 @@ class User(AbstractUser):
 
 class Category(models.Model):
     name = models.CharField('название', max_length=TITLE_LIMIT)
-    slug = models.SlugField('слаг жанра', unique=True,) 
+    slug = models.SlugField('слаг жанра', unique=True,)
 
     def __str__(self):
         return f'{self.name}'
 
-    class Meta: 
+    class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
 class Genre(models.Model):
     name = models.CharField('название', max_length=TITLE_LIMIT)
-    slug = models.SlugField('слаг жанра', unique=True) 
+    slug = models.SlugField('слаг жанра', unique=True)
 
     def __str__(self):
         return f'{self.name}'
-    
-    class Meta: 
+
+    class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
 
 class Title(models.Model):
-    name= models.CharField('название', max_length=TITLE_LIMIT)
+    name = models.CharField('название', max_length=TITLE_LIMIT)
     year = models.IntegerField('год')
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='title', verbose_name='категория', null=True, blank=True)
-    genre = models.ManyToManyField(Genre, related_name='title', verbose_name='жанр')
+    category = models.ForeignKey(
+        Category, on_delete=models.SET_NULL, related_name='title',
+        verbose_name='категория', null=True, blank=True
+    )
+    genre = models.ManyToManyField(Genre, related_name='title',
+                                   verbose_name='жанр')
 
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
+
 class Review(models.Model):
-    one = 1
-    two = 2
-    three = 3
-    four = 4
-    five = 5
-    six = 6
-    seven = 7
-    eight = 8
-    nine = 9 
-    ten = 10
-    CHOICES_SCORE = [
-        (one, "1"),
-        (two, "2"),
-        (three  , "3"),
-        (four, "4"),
-        (five, "5"),
-        (six, "6"),
-        (seven, "7"),
-        (eight, "8"),
-        (nine, "9"),
-        (ten, "10"),
-    ]
+
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='reviews'
     )
-    title = models.OneToOneField(Title, on_delete=models.CASCADE, related_name='review', verbose_name='обзор')
+    title = models.OneToOneField(Title, on_delete=models.CASCADE,
+                                 related_name='reviews', verbose_name='обзор')
     text = models.TextField()
-    score = models.CharField(choices=CHOICES_SCORE, max_length=2)
+    score = models.IntegerField(
+        validators=(
+            MaxValueValidator(10),
+            MinValueValidator(1)
+        ),
+        error_messages={'validators': 'Оценка должна быть от 1 до 10'}
+    )
     created_time = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=('title', 'author', ),
+                name='unique review'
+            )
+        ]
+        ordering = ('created_time',)
+
 
 class Comment(models.Model):
     author = models.ForeignKey(
