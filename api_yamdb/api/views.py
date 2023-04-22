@@ -1,7 +1,8 @@
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from rest_framework import viewsets, filters, mixins, permissions, viewsets, status
+from rest_framework import (viewsets, filters, mixins,
+                            permissions, viewsets, status)
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view
 from rest_framework_simplejwt.tokens import AccessToken
@@ -89,11 +90,15 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    Review.objects.all()
     serializer_class = ReviewSerializer
 
+    def get_queryset(self):
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        return title.reviews.all()
+
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        serializer.save(author=self.request.user, title=title)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -103,6 +108,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
     filter_backends = (filters.SearchFilter)
     search_fields = ('=name',)
+
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Список произведений."""
