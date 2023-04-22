@@ -34,10 +34,11 @@ class SignUpSerializer(serializers.Serializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     review = serializers.SlugRelatedField(slug_field='text', read_only=True)
-    author = SlugRelatedField(slug_field='username', read_only=True)
+    author = serializers.SlugRelatedField(slug_field='username',
+                                          read_only=True)
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'text', 'review', 'author', 'pub_date',)
         model = Comment
 
 
@@ -71,7 +72,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ('name', 'slug')
+        fields = ('name', 'slug',)
         lookup_field = 'slug'
 
 
@@ -93,7 +94,14 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         slug_field='slug',
         many=True
     )
-    
+
+    def validate_year(self, value):
+        now = dt.datetime.now().year
+        if value > now:
+            raise ValidationError(
+                f'{value} не может быть больше {now}'
+            )
+        return value
 
     class Meta:
         fields = '__all__'
