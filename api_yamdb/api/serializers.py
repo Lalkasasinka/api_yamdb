@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueValidator, ValidationError
-import datetime
+import datetime as dt
 from reviews.models import (Category, Comment, Genre, Review, Title,
                             User, NAME_LIMIT, EMAIL_LIMIT)
 from .validators import validate_username
@@ -71,7 +71,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = ('name', 'slug')
         lookup_field = 'slug'
 
 
@@ -79,11 +79,11 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        fields = '__all__'
+        fields = ('name', 'slug')
         lookup_field = 'slug'
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class TitleWriteSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
         queryset=Category.objects.all(),
         slug_field='slug'
@@ -93,14 +93,25 @@ class TitleSerializer(serializers.ModelSerializer):
         slug_field='slug',
         many=True
     )
+    
+
+    class Meta:
+        fields = '__all__'
+        model = Title
 
     def validate_year(self, value):
-        now = datetime.datetime.now().year
+        now = dt.datetime.now().year
         if value > now:
             raise ValidationError(
-                f'{value} не может быть больше {now}'
+                f'Значение не может быть больше {now}'
             )
         return value
+
+
+class TitleReadSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(read_only=True, many=True)
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         fields = '__all__'

@@ -8,6 +8,7 @@ EMAIL_LIMIT = 254
 NAME_LIMIT = 150
 ROLE_LIMIT = 50
 TITLE_LIMIT = 100
+SLUG_LIMIT = 50
 
 
 class User(AbstractUser):
@@ -58,14 +59,14 @@ class User(AbstractUser):
 
 class Category(models.Model):
     name = models.CharField('название', max_length=TITLE_LIMIT)
-    slug = models.SlugField('слаг жанра', unique=True,)
-
-    def __str__(self):
-        return f'{self.name}'
+    slug = models.SlugField('слаг жанра', unique=True, max_length=SLUG_LIMIT)
 
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
+
+    def __str__(self):
+        return f'{self.name}'
 
 
 class Genre(models.Model):
@@ -83,9 +84,10 @@ class Genre(models.Model):
 class Title(models.Model):
     name = models.CharField('название', max_length=TITLE_LIMIT)
     year = models.IntegerField('год')
+    description = models.TextField('описание', blank=True, null=True)
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, related_name='title',
-        verbose_name='категория', null=True, blank=True
+        verbose_name='категория', null=True,
     )
     genre = models.ManyToManyField(Genre, related_name='title',
                                    verbose_name='жанр')
@@ -103,7 +105,7 @@ class Review(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='reviews'
     )
-    title = models.OneToOneField(Title, on_delete=models.CASCADE,
+    title = models.ForeignKey(Title, on_delete=models.CASCADE,
                                  related_name='reviews', verbose_name='обзор')
     text = models.TextField()
     score = models.IntegerField(
