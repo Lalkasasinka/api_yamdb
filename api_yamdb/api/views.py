@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.db.models import Avg
 from rest_framework import (viewsets, mixins,
                             permissions, viewsets, status)
 from rest_framework.filters import SearchFilter
@@ -12,10 +13,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, Genre, Title, Review, User
 from .serializers import (CategorySerializer,
-                          CommentSerializer, ReviewSerializer, GenreSerializer, UserSerializer,
+                          CommentSerializer, ReviewSerializer,
+                          GenreSerializer, UserSerializer,
                           TokenSerializer, SignUpSerializer, TitleSerializer)
 from .permissions import (IsAdmin, IsAdminModeratorOwnerOrReadOnly,
-                          IsAdminOrReadOnly)
+                          IsAdminOrReadOnly,)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -93,16 +95,20 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = (IsAdminModeratorOwnerOrReadOnly,)
+    permission_classes = (IsAdminModeratorOwnerOrReadOnly, )
+
+    def get_queryset(self):
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        return title.reviews.all()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        serializer.save(author=self.request.user, title=title)
 
 
 class CategoryViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
-                    mixins.DestroyModelMixin, GenericViewSet):
+                      mixins.DestroyModelMixin, GenericViewSet):
     """Список категорий."""
 
     queryset = Category.objects.all()
@@ -114,7 +120,7 @@ class CategoryViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
 
 
 class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
-                    mixins.DestroyModelMixin, GenericViewSet):
+                   mixins.DestroyModelMixin, GenericViewSet):
     """Список жанров."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
@@ -126,8 +132,10 @@ class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Список произведений."""
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    ).all()
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('category__slug', 'genre__slug', 'name', 'year') 
+    filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')

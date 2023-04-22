@@ -34,10 +34,11 @@ class SignUpSerializer(serializers.Serializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     review = serializers.SlugRelatedField(slug_field='text', read_only=True)
-    author = SlugRelatedField(slug_field='username', read_only=True)
+    author = serializers.SlugRelatedField(slug_field='username',
+                                          read_only=True)
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'text', 'review', 'author', 'pub_date',)
         model = Comment
 
 
@@ -71,7 +72,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = ('name', 'slug',)
         lookup_field = 'slug'
 
 
@@ -79,7 +80,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        fields = '__all__'
+        fields = ('name', 'slug',)
         lookup_field = 'slug'
 
 
@@ -93,6 +94,7 @@ class TitleSerializer(serializers.ModelSerializer):
         slug_field='slug',
         many=True
     )
+    rating = serializers.IntegerField(read_only=True)
 
     def validate_year(self, value):
         now = datetime.datetime.now().year
@@ -103,5 +105,5 @@ class TitleSerializer(serializers.ModelSerializer):
         return value
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'name', 'year', 'genre', 'category', 'rating')
         model = Title
