@@ -1,10 +1,12 @@
+import datetime as dt
+
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueValidator
-import datetime as dt
-from reviews.models import (Category, Comment, Genre, Review, Title,
-                            User, NAME_LIMIT, EMAIL_LIMIT)
+from reviews.models import (EMAIL_LIMIT, NAME_LIMIT, Category, Comment, Genre,
+                            Review, Title, User)
+
 from .validators import validate_username
 
 
@@ -46,12 +48,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     title = SlugRelatedField(slug_field='name', read_only=True)
     author = SlugRelatedField(slug_field='username', read_only=True)
 
-    def validate_score(self, value):
-        if 0 > value > 10:
-            raise serializers.ValidationError('Оценка должна быть от 1 до 10')
-        return value
-
-    def validate(self, data):
+    def validate_title(self, data):
         request = self.context['request']
         author = request.user
         title_id = self.context.get('view').kwargs.get('title_id')

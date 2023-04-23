@@ -1,24 +1,25 @@
-from django.db import models
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
-
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
 EMAIL_LIMIT = 254
 NAME_LIMIT = 150
 ROLE_LIMIT = 50
 TITLE_LIMIT = 100
 SLUG_LIMIT = 50
+MAX_VALUE_SCORE = 10
+MIN_VALUE_SCORE = 1
 
 
 class User(AbstractUser):
-    Admin = 'admin'
-    Moderator = 'moderator'
-    User = 'user'
-    Roles = [
-        (Admin, 'Administrator'),
-        (Moderator, 'Moderator'),
-        (User, 'User'),
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    USER = 'user'
+    ROLES = [
+        (ADMIN, 'Administrator'),
+        (MODERATOR, 'Moderator'),
+        (USER, 'User'),
     ]
 
     email = models.EmailField(
@@ -35,8 +36,8 @@ class User(AbstractUser):
     role = models.CharField(
         verbose_name='Роль',
         max_length=ROLE_LIMIT,
-        choices=Roles,
-        default=User,
+        choices=ROLES,
+        default=USER,
     )
     bio = models.TextField(
         'Биография',
@@ -50,11 +51,11 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == self.Admin
+        return self.role == self.ADMIN
 
     @property
     def is_moderator(self):
-        return self.role == self.Moderator
+        return self.role == self.MODERATOR
 
 
 class Category(models.Model):
@@ -106,24 +107,26 @@ class Title(models.Model):
 class Review(models.Model):
 
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='reviews'
+        User, on_delete=models.CASCADE, related_name='reviews',
+        verbose_name='Автор'
     )
 
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE,
-        related_name='reviews', verbose_name='обзор'
+        related_name='reviews', verbose_name='Обзор'
     )
 
-    text = models.TextField()
+    text = models.TextField(verbose_name='Текст отзыва')
     score = models.IntegerField(
         validators=(
-            MaxValueValidator(10),
-            MinValueValidator(1)
+            MaxValueValidator(MAX_VALUE_SCORE),
+            MinValueValidator(MIN_VALUE_SCORE)
         ),
-        error_messages={'validators': 'Оценка должна быть от 1 до 10'}
+        error_messages={'validators': 'Оценка должна быть от 1 до 10'},
+        verbose_name='Рейтинг произведения'
     )
     pub_date = models.DateTimeField(
-        'Дата добавления', auto_now_add=True, db_index=True
+        verbose_name='Дата добавления', auto_now_add=True, db_index=True
     )
 
     class Meta:
@@ -135,18 +138,26 @@ class Review(models.Model):
         ]
         ordering = ('pub_date',)
 
+    def __str__(self) -> str:
+        return self.text
+
 
 class Comment(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='comments'
+        User, on_delete=models.CASCADE, related_name='comments',
+        verbose_name='Автор'
     )
     review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, related_name='comments'
+        Review, on_delete=models.CASCADE, related_name='comments',
+        verbose_name='Отзыв'
     )
-    text = models.TextField()
+    text = models.TextField(verbose_name='Текст комментария')
     pub_date = models.DateTimeField(
-        'Дата добавления', auto_now_add=True, db_index=True
+        verbose_name='Дата добавления', auto_now_add=True, db_index=True
     )
+
+    class Meta:
+        ordering = ('pub_date',)
 
     def __str__(self) -> str:
         return self.text

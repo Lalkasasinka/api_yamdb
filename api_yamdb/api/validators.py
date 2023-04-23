@@ -1,5 +1,7 @@
 import re
+
 from django.core.exceptions import ValidationError
+
 from api_yamdb.settings import RESERVED_USERNAMES, VALID_USERNAME
 
 
