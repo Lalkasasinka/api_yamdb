@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
-from rest_framework.validators import UniqueValidator, ValidationError
+from rest_framework.validators import UniqueValidator
 import datetime as dt
 from reviews.models import (Category, Comment, Genre, Review, Title,
                             User, NAME_LIMIT, EMAIL_LIMIT)
@@ -60,7 +60,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             request.method == "POST"
             and Review.objects.filter(title=title, author=author).exists()
         ):
-            raise ValidationError('Один пользователь - один отзыв')
+            raise serializers.ValidationError('Один пользователь - один отзыв')
         return data
 
     class Meta:
@@ -98,7 +98,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     def validate_year(self, value):
         now = dt.datetime.now().year
         if value > now:
-            raise ValidationError(
+            raise serializers.ValidationError(
                 f'{value} не может быть больше {now}'
             )
         return value
@@ -106,14 +106,6 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Title
-
-    def validate_year(self, value):
-        now = dt.datetime.now().year
-        if value > now:
-            raise ValidationError(
-                f'Значение не может быть больше {now}'
-            )
-        return value
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
