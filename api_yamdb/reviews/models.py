@@ -1,8 +1,7 @@
-from django.db import models
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
-
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
 EMAIL_LIMIT = 254
 NAME_LIMIT = 150
@@ -12,13 +11,13 @@ SLUG_LIMIT = 50
 
 
 class User(AbstractUser):
-    Admin = 'admin'
-    Moderator = 'moderator'
-    User = 'user'
-    Roles = [
-        (Admin, 'Administrator'),
-        (Moderator, 'Moderator'),
-        (User, 'User'),
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    USER = 'user'
+    ROLES = [
+        (ADMIN, 'Administrator'),
+        (MODERATOR, 'Moderator'),
+        (USER, 'User'),
     ]
 
     email = models.EmailField(
@@ -35,8 +34,8 @@ class User(AbstractUser):
     role = models.CharField(
         verbose_name='Роль',
         max_length=ROLE_LIMIT,
-        choices=Roles,
-        default=User,
+        choices=ROLES,
+        default=USER,
     )
     bio = models.TextField(
         'Биография',

@@ -1,25 +1,24 @@
-from django.shortcuts import get_object_or_404
-from django.db.models import Avg
-from rest_framework import (viewsets, mixins,
-                            permissions, viewsets, status)
-from rest_framework.filters import SearchFilter
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db.models import Avg
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action, api_view
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework_simplejwt.tokens import AccessToken
+from reviews.models import Category, Genre, Review, Title, User
 
-from reviews.models import Category, Genre, Title, Review, User
-from .serializers import (CategorySerializer,
-                          CommentSerializer, ReviewSerializer, GenreSerializer,
-                          UserSerializer, TokenSerializer, SignUpSerializer,
-                          TitleWriteSerializer, TitleReadSerializer)
-
-from .permissions import (IsAdmin, IsAdminModeratorOwnerOrReadOnly,
-                          IsAdminOrReadOnly,)
 from .filters import TitleFilter
+from .permissions import (IsAdmin, IsAdminModeratorOwnerOrReadOnly,
+                          IsAdminOrReadOnly)
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, ReviewSerializer, SignUpSerializer,
+                          TitleReadSerializer, TitleWriteSerializer,
+                          TokenSerializer, UserSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -76,7 +75,7 @@ def api_signup(request):
             status=status.HTTP_400_BAD_REQUEST)
     code = default_token_generator.make_token(user)
     message = f'Здравствуйте, {username}! Ваш код подтверждения: {code}'
-    send_mail(_, message, 'support@yamdb.com', [email])
+    send_mail(_, message, settings.EMAIL_HOST, [email])
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
