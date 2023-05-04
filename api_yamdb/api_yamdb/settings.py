@@ -1,6 +1,7 @@
 import os
-from pathlib import Path
 from datetime import timedelta
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -134,3 +135,6 @@ SIMPLE_JWT = {
 
 RESERVED_USERNAMES = ('me',)
 VALID_USERNAME = r'^[\w.@+-]+\Z'
+
+DOMAIN_NAME = 'yamdb.com'
+EMAIL_HOST = f'support@{DOMAIN_NAME}'
