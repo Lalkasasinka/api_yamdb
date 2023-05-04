@@ -65,7 +65,6 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Один пользователь - один отзыв')
         return data
 
-
     class Meta:
         fields = '__all__'
         model = Review
